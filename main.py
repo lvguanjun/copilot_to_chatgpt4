@@ -10,6 +10,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 
 from config import COPILOT_CHAT_ROUTE, COPILOT_CHAT_URL
 from utils.client_manger import client_manager
@@ -29,6 +30,14 @@ async def app_lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=app_lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.post(COPILOT_CHAT_ROUTE)
