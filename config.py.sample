@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+@File    :   config.py
+@Time    :   2023/11/01 15:00:33
+@Author  :   lvguanjun
+@Desc    :   config.py
+"""
+
+DEBUG = False
+
+# copilot chat url
+COPILOT_CHAT_URL = "https://api.githubcopilot.com/chat/completions"
+COPILOT_CHAT_ROUTE = "/v1/chat/completions"
+
+GITHUB_TOKEN_URL = "https://api.github.com/copilot_internal/v2/token"
