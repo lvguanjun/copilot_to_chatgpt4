@@ -4,7 +4,11 @@
 
 本项目简单的将 `copilot-chat` 的请求代理，并提供类似于 `chatgpt` 的接口。基于本服务，可以使用具备 `copilot` 权限的 `github token` 获得使用 `chatgpt` 感受。并且当前 `copilot-chat` 开放 `gpt4 model`，意味着可以无限制使用 `chatgpt4` 聊天。
 
-**重要：此操作目前观测极易被禁用 `copilot` 权限，除非你的 `github token` 非常多，否则慎重使用**
+**重要：此操作目前观测极易被禁用 `copilot` 权限，除非你的 `github token` 非常多，否则慎重使用!**
+
+**重要：此操作目前观测极易被禁用 `copilot` 权限，除非你的 `github token` 非常多，否则慎重使用!**
+
+**重要：此操作目前观测极易被禁用 `copilot` 权限，除非你的 `github token` 非常多，否则慎重使用!**
 
 ## 使用
 
