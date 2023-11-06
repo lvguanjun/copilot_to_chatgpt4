@@ -8,6 +8,8 @@
 """
 
 
+import traceback
+
 import httpx
 from fastapi import Request, Response
 from starlette.background import BackgroundTask
@@ -55,6 +57,9 @@ async def proxy_request(
             )
             await response.aclose()
         except Exception as e:
-            await logger.error(f"{i + 1}th try failed, error: {e}")
+            tb = traceback.format_exc()
+            await logger.error(f"{i + 1}th try failed, error: {e if str(e) else tb}")
+            if response:
+                await response.aclose()
             if i == max_try - 1:
                 return Response("Failed to make request", status_code=500)
