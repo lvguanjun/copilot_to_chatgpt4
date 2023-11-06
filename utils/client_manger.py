@@ -20,7 +20,9 @@ class ClientManager:
         return self._client
 
     def init_client(self):
-        self._client = httpx.AsyncClient()
+        self._client = httpx.AsyncClient(
+            limits=httpx.Limits(max_keepalive_connections=10, max_connections=10)
+        )
 
     async def close_client(self):
         if self._client:
