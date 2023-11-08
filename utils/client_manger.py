@@ -21,7 +21,8 @@ class ClientManager:
 
     def init_client(self):
         self._client = httpx.AsyncClient(
-            limits=httpx.Limits(max_keepalive_connections=10, max_connections=10)
+            limits=httpx.Limits(max_keepalive_connections=10, max_connections=10),
+            timeout=httpx.Timeout(20, pool=None),
         )
 
     async def close_client(self):

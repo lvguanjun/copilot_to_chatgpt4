@@ -71,6 +71,31 @@ curl --location 'http://127.0.0.1:8080/v1/chat/completions' \
 }'
 ```
 
+## 测试
+
+1. 环境配置，提供环境变量 `GITHUB_TOKEN` 为你的 `github token`
+
+    vscode 在项目根路径添加 `.env` 文件，内容如下：
+
+    ```bash
+    GITHUB_TOKEN=ghu_xxx
+    ```
+
+2. 运行测试
+
+    ```bash
+    # 运行所有测试
+    pytest tests
+    # 运行单个测试
+    pytest tests/test_copilot_proxy.py::test_run
+    ```
+
+    vscode 可以直接点击测试文件运行测试
+
+3. 其他说明
+
+    1. **当前仅唯一一个测试用例，作为服务器的压力测试，因为并发及请求次数较多，故此测试用例很可能导致 `copilot` 权限被禁用，慎重使用！**
+
 ## 其他
 
 1. 感谢 zhile 大佬提供的 `github token` 获取接口：[get_token](https://cocopilot.org/copilot/token)

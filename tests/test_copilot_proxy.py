@@ -24,7 +24,6 @@ headers = {"Authorization": f"Bearer {token}"}
 
 json_data = {
     "messages": [
-        {"role": "system", "content": "You are an AI programming assistant."},
         {"role": "user", "content": "hello"},
     ],
     "model": "copilot-chat",
@@ -46,11 +45,11 @@ async def simulate_user_request(client, i):
 # 调用测试函数
 @pytest.mark.asyncio
 async def test_run():
-    max_concurrent_requests = 7  # 设置同时并发数
+    max_concurrent_requests = 30  # 设置同时并发数
     total_requests = 50  # 设置最终请求次数
     waite_time = random.uniform(0.5, 1.5)
     non_200_responses = 0
-    max_non_200_percent = 10
+    max_non_200_percent = 5
 
     semaphore = asyncio.Semaphore(max_concurrent_requests)
 
@@ -65,7 +64,9 @@ async def test_run():
 
     async def test_stress():
         nonlocal non_200_responses
-        async with httpx.AsyncClient(headers=headers, timeout=10) as client:
+        async with httpx.AsyncClient(
+            headers=headers, timeout=httpx.Timeout(10)
+        ) as client:
             tasks = (simulate_user_request(client, i) for i in range(total_requests))
             await asyncio.gather(*tasks)
         non_200_percent = (non_200_responses / total_requests) * 100
