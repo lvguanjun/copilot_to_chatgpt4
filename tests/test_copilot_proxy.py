@@ -56,7 +56,7 @@ async def test_run():
     async def simulate_user_request(client, i):
         nonlocal non_200_responses
         async with semaphore:
-            json_data["messages"][1]["content"] = f"hello, i am luck_{i}"
+            json_data["messages"][0]["content"] = f"hello, i am luck_{i}"
             async with client.stream("POST", url, json=json_data) as response:
                 if response.status_code != 200:
                     non_200_responses += 1
