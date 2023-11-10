@@ -6,13 +6,13 @@
 @Author  :   lvguanjun
 @Desc    :   copilot_proxy_utils.py
 """
-import random
-import string
+
+
 from typing import Tuple
 
 from fastapi import Request
 
-from utils.utils import get_copilot_token
+from utils.utils import VscodeHeaders, get_copilot_token
 
 
 async def get_tokens(request: Request) -> Tuple[int, str]:
@@ -25,25 +25,10 @@ async def get_tokens(request: Request) -> Tuple[int, str]:
     return 200, copilot_token.get("token")
 
 
-def gen_hex_str(length: int) -> str:
-    return "".join(random.choice(string.hexdigits.lower()) for _ in range(length))
-
-
 def create_headers(copilot_token: str) -> dict:
     return {
         "Authorization": f"Bearer {copilot_token}",
-        "X-Request-Id": f"{gen_hex_str(8)}-{gen_hex_str(4)}-{gen_hex_str(4)}-{gen_hex_str(4)}-{gen_hex_str(12)}",
-        "Vscode-Sessionid": f"{gen_hex_str(8)}-{gen_hex_str(4)}-{gen_hex_str(4)}-{gen_hex_str(4)}-{gen_hex_str(25)}",
-        "Vscode-Machineid": f"{gen_hex_str(64)}",
-        "Editor-Version": "vscode/1.83.1",
-        "Editor-Plugin-Version": "copilot-chat/0.8.0",
-        "Openai-Organization": "github-copilot",
-        "Openai-Intent": "conversation-panel",
-        "Content-Type": "application/json",
-        "User-Agent": "GitHubCopilotChat/0.8.0",
-        "Accept": "*/*",
-        "Accept-Encoding": "gzip,deflate,br",
-        "connection": "close",
+        **VscodeHeaders.base_headers(),
     }
 
 
