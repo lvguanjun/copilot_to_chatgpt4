@@ -12,7 +12,7 @@ from typing import Tuple
 
 from fastapi import Request
 
-from utils.utils import VscodeHeaders, get_copilot_token
+from utils.utils import g_vscode_headers_instance, get_copilot_token
 
 
 async def get_tokens(request: Request) -> Tuple[int, str]:
@@ -28,7 +28,7 @@ async def get_tokens(request: Request) -> Tuple[int, str]:
 def create_headers(copilot_token: str) -> dict:
     return {
         "Authorization": f"Bearer {copilot_token}",
-        **VscodeHeaders.base_headers(),
+        **g_vscode_headers_instance.base_headers,
     }
 
 
