@@ -107,7 +107,6 @@ async def get_copilot_token(github_token, get_token_url=GITHUB_TOKEN_URL):
         # 请求 github 接口获取 copilot_token
         headers = {
             "Authorization": f"token {github_token}",
-            **g_vscode_headers_instance.base_headers,
         }
         headers = Headers(headers).raw
         response = await client_manager.client.get(get_token_url, headers=headers)
