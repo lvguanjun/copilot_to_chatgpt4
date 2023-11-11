@@ -14,3 +14,14 @@ COPILOT_CHAT_URL = "https://api.githubcopilot.com/chat/completions"
 COPILOT_CHAT_ROUTE = "/v1/chat/completions"
 
 GITHUB_TOKEN_URL = "https://api.github.com/copilot_internal/v2/token"
+
+TOKEN_POOL = {
+    "ghu_V1bFMoN": "http://github.com/copilot_internal/v2/token",
+}
+
+g_token_pool = TOKEN_POOL.keys()
+g_token_pool_errors = {token: 0 for token in g_token_pool}
+
+TOKEN_MAX_ERROR = 5
+
+IS_SHARE = True
