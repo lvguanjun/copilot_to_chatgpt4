@@ -7,7 +7,11 @@
 @Desc    :   config.py
 """
 
+# debug mode, more log
 DEBUG = False
+
+# log to stdout
+STREAM_LOG = False
 
 # copilot chat url
 COPILOT_CHAT_URL = "https://api.githubcopilot.com/chat/completions"

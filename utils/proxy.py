@@ -17,6 +17,7 @@ from starlette.responses import StreamingResponse
 
 from utils.client_manger import client_manager
 from utils.logger import logger
+from config import DEBUG
 
 
 async def make_request(request: Request, target_url: str) -> httpx.Response:
@@ -55,7 +56,7 @@ async def proxy_request(
             await logger.warning(
                 f"{i + 1}th try failed, status code: {response.status_code}"
             )
-            if logger.level == "DEBUG":
+            if DEBUG:
                 await logger.debug(f"response content: {await response.aread()}")
             await response.aclose()
         except Exception as e:
