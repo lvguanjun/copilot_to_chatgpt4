@@ -15,6 +15,7 @@ from aiologger.handlers.streams import AsyncStreamHandler
 from config import DEBUG
 
 logger = Logger(name="server_logger")
+logger.level = "INFO"
 logger_format = "%(asctime)s - [%(filename)s:%(lineno)d] - %(levelname)s - %(message)s"
 logger_format = Formatter(fmt=logger_format)
 
@@ -24,4 +25,5 @@ file_handler.formatter = logger_format
 logger.add_handler(file_handler)
 
 if DEBUG:
+    logger.level = "DEBUG"
     logger.add_handler(AsyncStreamHandler(formatter=logger_format))

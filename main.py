@@ -50,10 +50,11 @@ async def copilot_proxy(request: Request):
     status_code, token = await get_tokens(request)
     if status_code != 200:
         return Response(status_code=status_code, content=token)
+    max_try = 3
     headers = create_headers(token)
     json_data, is_stream = await create_json_data(request)
     new_request = fake_request("POST", json=json_data, headers=headers)
-    res = await proxy_request(new_request, COPILOT_CHAT_URL)
+    res = await proxy_request(new_request, COPILOT_CHAT_URL, max_try)
     if is_stream:
         res.headers["content-type"] = "text/event-stream; charset=utf-8"
     return res

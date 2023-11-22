@@ -55,10 +55,13 @@ async def proxy_request(
             await logger.warning(
                 f"{i + 1}th try failed, status code: {response.status_code}"
             )
+            if logger.level == "DEBUG":
+                await logger.debug(f"response content: {await response.aread()}")
             await response.aclose()
         except Exception as e:
-            tb = traceback.format_exc()
-            await logger.error(f"{i + 1}th try failed, error: {e if str(e) else tb}")
+            await logger.error(
+                f"{i + 1}th try failed, error: {str(e) or traceback.format_exc()}"
+            )
             if response:
                 await response.aclose()
             if i == max_try - 1:
