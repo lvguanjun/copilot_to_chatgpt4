@@ -7,9 +7,11 @@
 @Desc    :   utils.py
 """
 
+import hashlib
 import random
 import string
 import time
+import uuid
 from typing import Optional
 
 from fastapi import Request
@@ -37,60 +39,56 @@ def fake_request(
     return request
 
 
-def gen_hex_str(length: int) -> str:
-    return "".join(random.choice(string.hexdigits.lower()) for _ in range(length))
-
-
 class VscodeHeaders:
-    # session id 每 5 分钟更新一次，machine id 每 24 小时更新一次
+    # session id 1-90 分钟更新一次，machine id 保持不变
+    # session id 1/8 1-10, 1/4 10-30, 3/8 30-60, 1/4 60-90 更新
     def __init__(self):
         self.last_session_id_time = 0
-        self.update_session_id_time = 300
-        self.last_machine_id_time = 0
-        self.update_machine_id_time = 86400
+        self.update_session_id_time = self.gen_session_id_update_time()
+
         self._vscode_session_id = None
         self._vscode_machine_id = None
 
-    def _update_id(self, last_time, update_time, id_attr, id_parts):
-        now = int(time.time())
-        if now - getattr(self, last_time) > update_time:
-            setattr(self, last_time, now)
-            id_value = "-".join(gen_hex_str(length) for length in id_parts)
-            setattr(self, id_attr, id_value)
-        return getattr(self, id_attr)
+    @staticmethod
+    def gen_session_id_update_time():
+        ranges = [(60, 600), (600, 1800), (1800, 3600), (3600, 5400)]
+        weights = [1 / 8, 1 / 4, 3 / 8, 1 / 4]
+        chose_range = random.choices(ranges, weights=weights)[0]
+        return random.randint(*chose_range)
+
+    @property
+    def request_id(self) -> str:
+        return str(uuid.uuid4())
 
     @property
     def vscode_session_id(self) -> str:
-        return self._update_id(
-            "last_session_id_time",
-            self.update_session_id_time,
-            "_vscode_session_id",
-            [8, 4, 4, 4, 25],
-        )
+        now = int(time.time())
+        if now - self.last_session_id_time > self.update_session_id_time:
+            self.last_session_id_time = now
+            self.update_session_id_time = self.gen_session_id_update_time()
+            self._vscode_session_id = str(uuid.uuid4()) + str(int(time.time() * 1000))
+        return self._vscode_session_id
 
     @property
     def vscode_machine_id(self) -> str:
-        return self._update_id(
-            "last_machine_id_time",
-            self.update_machine_id_time,
-            "_vscode_machine_id",
-            [64],
-        )
+        if not self._vscode_machine_id:
+            self._vscode_machine_id = hashlib.sha256(
+                str(uuid.uuid4()).encode()
+            ).hexdigest()
+        return self._vscode_machine_id
 
     @property
     def base_headers(self) -> dict:
         return {
-            "X-Request-Id": "-".join(
-                gen_hex_str(length) for length in [8, 4, 4, 4, 12]
-            ),
+            "X-Request-Id": self.request_id,
             "Vscode-Sessionid": self.vscode_session_id,
             "Vscode-Machineid": self.vscode_machine_id,
-            "Editor-Version": "vscode/1.83.1",
-            "Editor-Plugin-Version": "copilot-chat/0.8.0",
+            "Editor-Version": "vscode/1.84.2",
+            "Editor-Plugin-Version": "copilot-chat/0.10.2",
             "Openai-Organization": "github-copilot",
             "Openai-Intent": "conversation-panel",
             "Content-Type": "application/json",
-            "User-Agent": "GitHubCopilotChat/0.8.0",
+            "User-Agent": "GitHubCopilotChat/0.10.2",
             "Accept": "*/*",
             "Accept-Encoding": "gzip,deflate,br",
             "connection": "close",
