@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  copilot_to_chatgpt4:
+    container_name: copilot_to_chatgpt4
+    image: 301redirect/copilot_to_chatgpt4:latest
+    environment:
+      - COPILOT_CHAT_URL
+      - COPILOT_CHAT_ROUTE
+      - GITHUB_TOKEN_URL
+
+  chatgpt-next-web:
+    container_name: chatgpt-next-web
+    image: yidadaa/chatgpt-next-web:latest
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - copilot_to_chatgpt4
+    environment:
+      - OPENAI_API_KEY=$OPENAI_API_KEY
+      - CODE=$CODE
+      - BASE_URL=http://copilot_to_chatgpt4:8000
+      - OPENAI_ORG_ID=$OPENAI_ORG_ID
+      - HIDE_USER_API_KEY=$HIDE_USER_API_KEY
+      - DISABLE_GPT4=$DISABLE_GPT4
+      - ENABLE_BALANCE_QUERY=$ENABLE_BALANCE_QUERY
+      - DISABLE_FAST_LINK=$DISABLE_FAST_LINK
+      - OPENAI_SB=$OPENAI_SB
