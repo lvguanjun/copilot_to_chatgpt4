@@ -16,12 +16,20 @@ from utils.utils import g_vscode_headers_instance, get_copilot_token
 
 
 async def get_tokens(request: Request) -> Tuple[int, str]:
-    github_token = request.headers.get("Authorization", "").strip("Bearer ")
+    auth_header = request.headers.get("Authorization", "")
+
+    if not auth_header.startswith("Bearer "):
+        return 401, "Unauthorized"
+
+    github_token = auth_header.removeprefix("Bearer ")
+
     if not github_token:
         return 401, "Unauthorized"
+
     status_code, copilot_token = await get_copilot_token(github_token)
     if status_code != 200:
         return status_code, copilot_token
+
     return 200, copilot_token.get("token")
 
 
