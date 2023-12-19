@@ -50,7 +50,7 @@ async def copilot_proxy(request: Request):
     status_code, token = await get_tokens(request)
     if status_code != 200:
         return Response(status_code=status_code, content=token)
-    max_try = 3
+    max_try = 1
     headers = create_headers(token)
     json_data, is_stream = await create_json_data(request)
     new_request = fake_request("POST", json=json_data, headers=headers)
