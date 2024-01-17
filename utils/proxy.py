@@ -7,7 +7,6 @@
 @Desc    :   proxy.py
 """
 
-
 import traceback
 
 import httpx
@@ -15,9 +14,9 @@ from fastapi import Request, Response
 from starlette.background import BackgroundTask
 from starlette.responses import StreamingResponse
 
+from config import DEBUG
 from utils.client_manger import client_manager
 from utils.logger import logger
-from config import DEBUG
 
 
 async def make_request(request: Request, target_url: str) -> httpx.Response:
@@ -31,17 +30,50 @@ async def make_request(request: Request, target_url: str) -> httpx.Response:
     return response
 
 
-async def handle_response(response: httpx.Response) -> StreamingResponse:
-    streaming_response = StreamingResponse(
-        response.aiter_bytes(),
+async def stream_response(response: httpx.Response):
+    async for line in response.aiter_lines():
+        if line:
+            yield line + "\n\n"
+            if line == "data: [DONE]":
+                break
+
+
+async def handle_response(response: httpx.Response) -> StreamingResponse | Response:
+    is_stream = response.headers.get("transfer-encoding") == "chunked"
+
+    if not is_stream:
+        return Response(
+            await response.aread(),
+            status_code=response.status_code,
+            headers=response.headers,
+            background=BackgroundTask(close_response, response),
+        )
+
+    return StreamingResponse(
+        stream_response(response),
         status_code=response.status_code,
-        media_type=response.headers.get("Content-Type"),
-        background=BackgroundTask(response.aclose),
+        headers=response.headers,
+        background=BackgroundTask(close_response, response),
     )
 
-    for name, value in response.headers.items():
-        streaming_response.headers[name] = value
-    return streaming_response
+
+async def close_response(response: httpx.Response):
+    await response.aclose()
+    if DEBUG:
+        await logger.debug("Response closed.")
+
+
+async def log_error(i: int, response: httpx.Response = None, error: Exception = None):
+    if response:
+        await logger.warning(
+            f"{i + 1}th try failed, status code: {response.status_code}"
+        )
+        if DEBUG:
+            await logger.debug(f"response content: {await response.aread()}")
+    elif error:
+        await logger.error(
+            f"{i + 1}th try failed, error: {str(error) or traceback.format_exc()}"
+        )
 
 
 async def proxy_request(
@@ -53,17 +85,11 @@ async def proxy_request(
             response = await make_request(request, target_url)
             if response.status_code == 200 or i == max_try - 1:
                 return await handle_response(response)
-            await logger.warning(
-                f"{i + 1}th try failed, status code: {response.status_code}"
-            )
-            if DEBUG:
-                await logger.debug(f"response content: {await response.aread()}")
-            await response.aclose()
+            await log_error(i, response=response)
+            await close_response(response)
         except Exception as e:
-            await logger.error(
-                f"{i + 1}th try failed, error: {str(e) or traceback.format_exc()}"
-            )
+            await log_error(i, error=e)
             if response:
-                await response.aclose()
+                await close_response(response)
             if i == max_try - 1:
                 return Response("Failed to make request", status_code=500)
