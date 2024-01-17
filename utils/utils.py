@@ -9,15 +9,15 @@
 
 import hashlib
 import random
-import string
 import time
 import uuid
 from typing import Optional
+from urllib.parse import urlparse
 
 from fastapi import Request
 from fastapi.datastructures import Headers
 
-from config import GITHUB_TOKEN_URL
+from config import COPILOT_CHAT_URL, GITHUB_TOKEN_URL, SALT
 from utils.cache import get_token_from_cache, set_token_to_cache
 from utils.client_manger import client_manager
 
@@ -40,9 +40,15 @@ def fake_request(
 
 
 class VscodeHeaders:
+    copilot_host_name = urlparse(COPILOT_CHAT_URL).hostname
+
     # session id 1-90 分钟更新一次，machine id 保持不变
     # session id 1/8 1-10, 1/4 10-30, 3/8 30-60, 1/4 60-90 更新
-    def __init__(self):
+    def __init__(self, github_token):
+        self.vscode_machine_id = hashlib.sha256(
+            (github_token + SALT).encode()
+        ).hexdigest()
+
         self.last_session_id_time = 0
         self.update_session_id_time = self.gen_session_id_update_time()
 
@@ -70,17 +76,9 @@ class VscodeHeaders:
         return self._vscode_session_id
 
     @property
-    def vscode_machine_id(self) -> str:
-        if not self._vscode_machine_id:
-            self._vscode_machine_id = hashlib.sha256(
-                str(uuid.uuid4()).encode()
-            ).hexdigest()
-        return self._vscode_machine_id
-
-    @property
     def base_headers(self) -> dict:
         return {
-            "Host": "api.githubcopilot.com",
+            "Host": self.copilot_host_name,
             "X-Request-Id": self.request_id,
             "Vscode-Sessionid": self.vscode_session_id,
             "Vscode-Machineid": self.vscode_machine_id,
@@ -98,16 +96,13 @@ class VscodeHeaders:
         }
 
 
-# 创建全局实例
-g_vscode_headers_instance = VscodeHeaders()
-
-
 async def get_copilot_token(github_token, get_token_url=GITHUB_TOKEN_URL):
     copilot_token = get_token_from_cache(github_token)
     if not copilot_token:
+        token_host_name = urlparse(get_token_url).hostname
         # 请求 github 接口获取 copilot_token
         headers = {
-            "Host": "api.github.com",
+            "Host": token_host_name,
             "Authorization": f"token {github_token}",
             "Editor-Version": "vscode/1.85.0",
             "Editor-Plugin-Version": "copilot-chat/0.11.1",
@@ -115,7 +110,6 @@ async def get_copilot_token(github_token, get_token_url=GITHUB_TOKEN_URL):
             "Accept": "*/*",
             "Accept-Encoding": "gzip, deflate, br",
         }
-        headers = Headers(headers).raw
         response = await client_manager.client.get(get_token_url, headers=headers)
         if response.status_code != 200:
             return response.status_code, response.text

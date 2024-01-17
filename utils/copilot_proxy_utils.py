@@ -12,32 +12,17 @@ from typing import Tuple
 
 from fastapi import Request
 
-from utils.utils import g_vscode_headers_instance, get_copilot_token
+from utils.utils import VscodeHeaders
+
+headers_instance_cache = {}
 
 
-async def get_tokens(request: Request) -> Tuple[int, str]:
-    auth_header = request.headers.get("Authorization", "")
-
-    if not auth_header.startswith("Bearer "):
-        return 401, "Unauthorized"
-
-    github_token = auth_header.removeprefix("Bearer ")
-
-    if not github_token:
-        return 401, "Unauthorized"
-
-    status_code, copilot_token = await get_copilot_token(github_token)
-    if status_code != 200:
-        return status_code, copilot_token
-
-    return 200, copilot_token.get("token")
-
-
-def create_headers(copilot_token: str) -> dict:
-    return {
-        "Authorization": f"Bearer {copilot_token}",
-        **g_vscode_headers_instance.base_headers,
-    }
+def get_fake_headers(github_token: str) -> dict:
+    if headers_instance := headers_instance_cache.get(github_token):
+        return headers_instance.base_headers
+    headers_instance = VscodeHeaders(github_token)
+    headers_instance_cache[github_token] = headers_instance
+    return headers_instance.base_headers
 
 
 async def create_json_data(request: Request) -> Tuple[dict, bool]:

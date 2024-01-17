@@ -14,10 +14,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from config import COPILOT_CHAT_ROUTE, COPILOT_CHAT_URL
 from utils.client_manger import client_manager
-from utils.copilot_proxy_utils import create_headers, create_json_data, get_tokens
+from utils.copilot_proxy_utils import create_json_data, get_fake_headers
 from utils.logger import logger
 from utils.proxy import proxy_request
-from utils.utils import fake_request
+from utils.utils import fake_request, get_copilot_token
 
 
 @asynccontextmanager
@@ -47,13 +47,22 @@ async def copilot_proxy(request: Request):
     使用 github token 获取 copilot-chat 的提示接口
     """
 
-    status_code, token = await get_tokens(request)
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return Response(status_code=401, content="Unauthorized")
+    github_token = auth_header.removeprefix("Bearer ")
+    if not github_token:
+        return Response(status_code=401, content="Unauthorized")
+    status_code, copilot_token = await get_copilot_token(github_token)
     if status_code != 200:
-        return Response(status_code=status_code, content=token)
+        return Response(status_code=status_code, content=copilot_token)
+
     max_try = 1
-    headers = create_headers(token)
+    headers = get_fake_headers(github_token)
+    headers["Authorization"] = f"Bearer {copilot_token.get('token')}"
     json_data, is_stream = await create_json_data(request)
     new_request = fake_request("POST", json=json_data, headers=headers)
+
     res = await proxy_request(new_request, COPILOT_CHAT_URL, max_try)
     if is_stream:
         res.headers["content-type"] = "text/event-stream; charset=utf-8"

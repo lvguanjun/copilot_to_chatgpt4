@@ -1,7 +1,7 @@
 aiofiles==23.2.1
 aiologger==0.7.0
 fastapi==0.104.1
-httpx==0.25.0
+httpx[brotli]==0.25.0
 pytest==7.4.3
 pytest-asyncio==0.21.1
 uvicorn==0.23.2
