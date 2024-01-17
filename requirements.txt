@@ -1,5 +1,6 @@
 aiofiles==23.2.1
 aiologger==0.7.0
+cachetools==5.3.2
 fastapi==0.104.1
 httpx[brotli]==0.25.0
 pytest==7.4.3
