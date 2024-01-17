@@ -60,13 +60,10 @@ async def copilot_proxy(request: Request):
     max_try = 1
     headers = get_fake_headers(github_token)
     headers["Authorization"] = f"Bearer {copilot_token.get('token')}"
-    json_data, is_stream = await create_json_data(request)
+    json_data = await create_json_data(request)
     new_request = fake_request("POST", json=json_data, headers=headers)
 
-    res = await proxy_request(new_request, COPILOT_CHAT_URL, max_try)
-    if is_stream:
-        res.headers["content-type"] = "text/event-stream; charset=utf-8"
-    return res
+    return await proxy_request(new_request, COPILOT_CHAT_URL, max_try)
 
 
 if __name__ == "__main__":

@@ -8,13 +8,13 @@
 """
 
 
-from typing import Tuple
-
+from cachetools import TTLCache
 from fastapi import Request
 
 from utils.utils import VscodeHeaders
 
-headers_instance_cache = {}
+# 最多存30个github token信息，每个token信息存储3天
+headers_instance_cache = TTLCache(maxsize=30, ttl=259200)
 
 
 def get_fake_headers(github_token: str) -> dict:
@@ -25,15 +25,14 @@ def get_fake_headers(github_token: str) -> dict:
     return headers_instance.base_headers
 
 
-async def create_json_data(request: Request) -> Tuple[dict, bool]:
+async def create_json_data(request: Request) -> dict:
     json_data = await request.json()
-    is_stream = json_data.get("stream", False)
     return {
         "messages": json_data.get("messages", []),
         "model": json_data.get("model", "copilot-chat"),
         "temperature": json_data.get("temperature", 0.1),
         "top_p": json_data.get("top_p", 1),
         "n": json_data.get("n", 1),
-        "stream": is_stream,
+        "stream": json_data.get("stream", False),
         "intent": True,
-    }, is_stream
+    }

@@ -34,8 +34,6 @@ async def stream_response(response: httpx.Response):
     async for line in response.aiter_lines():
         if line:
             yield line + "\n\n"
-            if line == "data: [DONE]":
-                break
 
 
 async def handle_response(response: httpx.Response) -> StreamingResponse | Response:
@@ -48,6 +46,8 @@ async def handle_response(response: httpx.Response) -> StreamingResponse | Respo
             headers=response.headers,
             background=BackgroundTask(close_response, response),
         )
+
+    response.headers["content-type"] = "text/event-stream; charset=utf-8"
 
     return StreamingResponse(
         stream_response(response),
