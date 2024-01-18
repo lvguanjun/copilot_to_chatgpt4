@@ -92,7 +92,7 @@ class VscodeHeaders:
             "User-Agent": "GitHubCopilotChat/0.11.1",
             "Accept": "*/*",
             "Accept-Encoding": "gzip,deflate,br",
-            "connection": "keep-alive",
+            "connection": "close",
         }
 
 
