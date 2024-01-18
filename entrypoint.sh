@@ -2,10 +2,10 @@
 
 # Function to update config.py only if the environment variable is set
 update_config() {
-    local key=\$1
-    local env_var_value=$(eval echo \$\$2)
+    local key=$1
+    local env_var_value=$(eval echo \$"$2")
     if [ ! -z "$env_var_value" ]; then
-        sed -i "s/^$key = .*/$key = $env_var_value/" config.py
+        sed -i "s/^$key = .*/$key = \"$env_var_value\"/" config.py
     fi
 }
 
