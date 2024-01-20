@@ -21,7 +21,7 @@ services:
     environment:
       - OPENAI_API_KEY=$OPENAI_API_KEY
       - CODE=$CODE
-      - BASE_URL=http://copilot_to_chatgpt4:8000
+      - BASE_URL=http://copilot_to_chatgpt4:8080
       - OPENAI_ORG_ID=$OPENAI_ORG_ID
       - HIDE_USER_API_KEY=$HIDE_USER_API_KEY
       - DISABLE_GPT4=$DISABLE_GPT4
