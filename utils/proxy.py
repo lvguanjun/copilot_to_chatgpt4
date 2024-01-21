@@ -20,12 +20,8 @@ from utils.logger import logger
 
 
 async def make_request(request: Request, target_url: str) -> httpx.Response:
-    headers = dict(request.headers)
-    headers.pop("host", None)
     json = await request.json()
-    req = client_manager.client.build_request(
-        request.method, target_url, headers=headers, json=json
-    )
+    req = httpx.Request(request.method, target_url, headers=request.headers, json=json)
     response = await client_manager.client.send(req, stream=True)
     return response
 
