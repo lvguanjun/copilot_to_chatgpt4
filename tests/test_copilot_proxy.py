@@ -24,7 +24,11 @@ headers = {"Authorization": f"Bearer {token}"}
 
 json_data = {
     "messages": [
-        {"role": "user", "content": "hello"},
+        {
+            "role": "system",
+            "content": 'You are an AI programming assistant.\nWhen asked for your name, you must respond with "GitHub Copilot".\nFollow the user"s requirements carefully & to the letter.',
+        },
+        {"role": "user", "content": "写一篇800字的关于人工智能的文章。"},
     ],
     "model": "copilot-chat",
     "temperature": 0.1,
@@ -35,19 +39,11 @@ json_data = {
 }
 
 
-# 模拟一个用户请求接口
-async def simulate_user_request(client, i):
-    json_data["messages"][1]["content"] = f"hello, i am luck_{i}"
-    response = await client.post(url, json=json_data)
-    assert response.status_code == 200
-
-
 # 调用测试函数
 @pytest.mark.asyncio
 async def test_run():
     max_concurrent_requests = 30  # 设置同时并发数
     total_requests = 50  # 设置最终请求次数
-    waite_time = random.uniform(0.5, 1.5)
     non_200_responses = 0
     max_non_200_percent = 5
 
@@ -56,11 +52,10 @@ async def test_run():
     async def simulate_user_request(client, i):
         nonlocal non_200_responses
         async with semaphore:
-            json_data["messages"][0]["content"] = f"hello, i am luck_{i}"
             async with client.stream("POST", url, json=json_data) as response:
                 if response.status_code != 200:
                     non_200_responses += 1
-            await asyncio.sleep(waite_time)
+                await response.aread()
 
     async def test_stress():
         nonlocal non_200_responses
