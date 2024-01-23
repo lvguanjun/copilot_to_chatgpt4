@@ -17,7 +17,7 @@ from utils.client_manger import client_manager
 from utils.copilot_proxy_utils import create_json_data, get_fake_headers
 from utils.logger import logger
 from utils.proxy import proxy_request
-from utils.utils import fake_request, get_copilot_token
+from utils.utils import get_copilot_token
 
 
 @asynccontextmanager
@@ -61,7 +61,7 @@ async def copilot_proxy(request: Request):
     headers = get_fake_headers(github_token)
     headers["Authorization"] = f"Bearer {copilot_token.get('token')}"
     json_data = await create_json_data(request)
-    new_request = fake_request("POST", json=json_data, headers=headers)
+    new_request = ("POST", headers, json_data)
 
     return await proxy_request(new_request, COPILOT_CHAT_URL, max_try)
 

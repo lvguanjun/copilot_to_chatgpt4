@@ -19,13 +19,6 @@ from utils.client_manger import client_manager
 from utils.logger import logger
 
 
-async def make_request(request: Request, target_url: str) -> httpx.Response:
-    json = await request.json()
-    req = httpx.Request(request.method, target_url, headers=request.headers, json=json)
-    response = await client_manager.client.send(req, stream=True)
-    return response
-
-
 async def stream_response(response: httpx.Response):
     async for line in response.aiter_lines():
         if line:
@@ -73,12 +66,14 @@ async def log_error(i: int, response: httpx.Response = None, error: Exception = 
 
 
 async def proxy_request(
-    request: Request, target_url: str, max_try: int = 1
+    request: Request | tuple, target_url: str, max_try: int = 1
 ) -> Response | StreamingResponse:
     for i in range(max_try):
         response = None
         try:
-            response = await make_request(request, target_url)
+            method, headers, json = request
+            req = httpx.Request(method, target_url, headers=headers, json=json)
+            response = await client_manager.client.send(req, stream=True)
             if response.status_code == 200 or i == max_try - 1:
                 return await handle_response(response)
             await log_error(i, response=response)

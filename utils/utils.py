@@ -22,23 +22,6 @@ from utils.cache import get_token_from_cache, set_token_to_cache
 from utils.client_manger import client_manager
 
 
-def fake_request(
-    method: str, headers: Optional[dict] = None, json: Optional[dict] = None
-) -> Request:
-    """
-    根据提供的json数据和headers，构造一个request对象
-    """
-
-    scope = {
-        "method": method,
-        "headers": Headers(headers).raw if headers else [],
-        "type": "http",
-    }
-    request = Request(scope)
-    request._json = json
-    return request
-
-
 class VscodeHeaders:
     copilot_host_name = urlparse(COPILOT_CHAT_URL).hostname
 
