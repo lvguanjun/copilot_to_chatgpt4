@@ -7,6 +7,7 @@
 @Desc    :   proxy.py
 """
 
+import asyncio
 import traceback
 
 import httpx
@@ -19,10 +20,44 @@ from utils.client_manger import client_manager
 from utils.logger import logger
 
 
-async def stream_response(response: httpx.Response):
-    async for line in response.aiter_lines():
-        if line:
-            yield line + "\n\n"
+class ResponseTask:
+    def __init__(self, response: httpx.Response):
+        self.response = response
+        self.task = asyncio.create_task(self.read_response_to_queue())
+
+    async def read_response_to_queue(self):
+        self.queue = asyncio.Queue()
+        try:
+            async for line in self.response.aiter_lines():
+                if line:
+                    await self.queue.put(line)
+        except Exception as e:
+            await log_error(0, error=e)
+        finally:
+            # Signal the end of the stream
+            await self.response.aclose()
+            if DEBUG:
+                await logger.debug("Response closed.")
+            await self.queue.put(None)
+
+    async def close(self):
+        self.task.cancel()
+        while not self.queue.empty():
+            self.queue.get_nowait()
+
+
+async def stream_response(response_task: ResponseTask):
+    while True:
+        line = await response_task.queue.get()
+        if line is None:
+            break
+        yield line + "\n\n"
+
+
+async def close_response(response: httpx.Response):
+    await response.aclose()
+    if DEBUG:
+        await logger.debug("Response closed.")
 
 
 async def handle_response(response: httpx.Response) -> StreamingResponse | Response:
@@ -37,19 +72,14 @@ async def handle_response(response: httpx.Response) -> StreamingResponse | Respo
         )
 
     response.headers["content-type"] = "text/event-stream; charset=utf-8"
+    response_task = ResponseTask(response)
 
     return StreamingResponse(
-        stream_response(response),
+        stream_response(response_task),
         status_code=response.status_code,
         headers=response.headers,
-        background=BackgroundTask(close_response, response),
+        background=BackgroundTask(response_task.close),
     )
-
-
-async def close_response(response: httpx.Response):
-    await response.aclose()
-    if DEBUG:
-        await logger.debug("Response closed.")
 
 
 async def log_error(i: int, response: httpx.Response = None, error: Exception = None):
