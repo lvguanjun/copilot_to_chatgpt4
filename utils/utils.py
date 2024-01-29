@@ -11,11 +11,7 @@ import hashlib
 import random
 import time
 import uuid
-from typing import Optional
 from urllib.parse import urlparse
-
-from fastapi import Request
-from fastapi.datastructures import Headers
 
 from config import COPILOT_CHAT_URL, GITHUB_TOKEN_URL, SALT
 from utils.cache import get_token_from_cache, set_token_to_cache
@@ -100,3 +96,10 @@ async def get_copilot_token(github_token, get_token_url=GITHUB_TOKEN_URL):
         # 保存到 cache
         set_token_to_cache(github_token, copilot_token)
     return 200, copilot_token
+
+
+def pares_url_token(url_token: str) -> tuple:
+    if "||" not in url_token:
+        return GITHUB_TOKEN_URL, url_token
+    get_token_url, github_token = url_token.split("||", 1)
+    return get_token_url, github_token
