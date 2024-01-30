@@ -24,6 +24,10 @@
 
    ![setting](readme/setting.png)
 
+   > **特性：支持 API 密钥配置 endpoint 和 token ，用于薅号商，例如 `https://api.example.com/copilot_internal/v2/token||example_token` ，即 {endpoint}||{token}**
+
+   > 理论上任何能拿到 `copilot token` 的接口都可以用此接口接入 `chatgpt` 。
+
 3. 根据个人喜好配置其他选项，聊天即可，建议选择 `gpt-4` model
 
    ![demo](readme/demo.png)
@@ -45,6 +49,8 @@ pip install -r requirements.txt
 #### 2. 启动服务
 
 ```bash
+cp config.py.example config.py
+export NOT_ALLOW_TOKEN_URLS=https://api.cocopilot.org/copilot_internal/v2/token
 uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
@@ -68,6 +74,7 @@ uvicorn main:app --host 127.0.0.1 --port 8000
    - `COPILOT_CHAT_ROUTE`: 代替出来的 `chat` 路由，默认为 `/v1/chat/completions`
    - `GITHUB_TOKEN_URL`: `github token` 获取接口，默认为 `https://api.github.com/copilot_internal/v2/token`
    - `SALT`: 用于生成 `vscode machine_id` 的盐值，若 `github token` 非个人使用建议设置，避免 id 相同撞车
+   - `NOT_ALLOW_TOKEN_URLS`: 不允许的 `github token` 获取接口，多个用 `,` 分隔，默认为 `https://api.cocopilot.org/copilot_internal/v2/token`
 
    </details>
 
@@ -119,11 +126,11 @@ curl --location 'http://127.0.0.1:8080/v1/chat/completions' \
    copy .env.example .env
    ```
 
-    1. 修改 `.env` 文件中的 `OPENAI_API_KEY` 为你的 `github token`
+   1. 修改 `.env` 文件中的 `OPENAI_API_KEY` 为你的 `github token`
 
-    2. 如果需要设置 `chatgpt-next-web` 的访问密码，则修改 `.env` 文件中的 `CODE` 为你的密码，否则留空
+   2. 如果需要设置 `chatgpt-next-web` 的访问密码，则修改 `.env` 文件中的 `CODE` 为你的密码，否则留空
 
-        ps: 若非免费分享，建议设置密码，避免被他人恶意使用，详见 [chatgpt-next-web](https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web/blob/main/README_CN.md#%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F)
+      ps: 若非免费分享，建议设置密码，避免被他人恶意使用，详见 [chatgpt-next-web](https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web/blob/main/README_CN.md#%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F)
 
 2. 运行 docker-compose
 

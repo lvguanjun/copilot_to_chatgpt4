@@ -54,6 +54,10 @@ async def copilot_proxy(request: Request):
     if not github_token:
         return Response(status_code=401, content="Unauthorized")
     get_token_url, github_token = pares_url_token(github_token)
+    if github_token is None:
+        return Response(
+            status_code=403, content=f"{get_token_url} is not allow to get token"
+        )
     status_code, copilot_token = await get_copilot_token(github_token, get_token_url)
     if status_code != 200:
         return Response(status_code=status_code, content=copilot_token)

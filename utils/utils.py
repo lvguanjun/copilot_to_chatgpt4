@@ -8,6 +8,7 @@
 """
 
 import hashlib
+import os
 import random
 import time
 import uuid
@@ -16,6 +17,8 @@ from urllib.parse import urlparse
 from config import COPILOT_CHAT_URL, GITHUB_TOKEN_URL, SALT
 from utils.cache import get_token_from_cache, set_token_to_cache
 from utils.client_manger import client_manager
+
+not_allow_token_urls = os.getenv("NOT_ALLOW_TOKEN_URLS", "").split(",")
 
 
 class VscodeHeaders:
@@ -98,8 +101,26 @@ async def get_copilot_token(github_token, get_token_url=GITHUB_TOKEN_URL):
     return 200, copilot_token
 
 
+def check_token_url(url: str) -> bool:
+    if not not_allow_token_urls:
+        return True
+    parsed_url = urlparse(url)
+    for not_allow_url in not_allow_token_urls:
+        if all(
+            [
+                parsed_url.scheme == urlparse(not_allow_url).scheme,
+                parsed_url.hostname == urlparse(not_allow_url).hostname,
+                parsed_url.path == urlparse(not_allow_url).path,
+            ]
+        ):
+            return False
+    return True
+
+
 def pares_url_token(url_token: str) -> tuple:
     if "||" not in url_token:
         return GITHUB_TOKEN_URL, url_token
     get_token_url, github_token = url_token.split("||", 1)
+    if not check_token_url(get_token_url):
+        return get_token_url, None
     return get_token_url, github_token
