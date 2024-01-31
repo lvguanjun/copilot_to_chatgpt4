@@ -23,6 +23,6 @@ GITHUB_TOKEN_URL = "https://api.github.com/copilot_internal/v2/token"
 # 建议更改盐，避免同一个 github_token 导致的撞车
 SALT = "is_a_salt"
 
-TOKEN_URLS_TYPE = "black"  # white or black
+TOKEN_URLS_TYPE = "white"  # white or black
 
-TOKEN_URLS = "https://api.cocopilot.org/copilot_internal/v2/token"
+TOKEN_URLS = ""
