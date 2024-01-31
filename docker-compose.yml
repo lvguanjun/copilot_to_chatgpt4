@@ -10,7 +10,8 @@ services:
       - COPILOT_CHAT_ROUTE=$COPILOT_CHAT_ROUTE
       - GITHUB_TOKEN_URL=$GITHUB_TOKEN_URL
       - SALT=$SALT
-      - NOT_ALLOW_TOKEN_URLS=$NOT_ALLOW_TOKEN_URLS
+      - TOKEN_URLS_TYPE=$TOKEN_URLS_TYPE
+      - TOKEN_URLS=$TOKEN_URLS
 
   chatgpt-next-web:
     container_name: chatgpt-next-web

@@ -8,18 +8,16 @@
 """
 
 import hashlib
-import os
 import random
 import time
 import uuid
 from urllib.parse import urlparse
 
-from config import COPILOT_CHAT_URL, GITHUB_TOKEN_URL, SALT
+from config import COPILOT_CHAT_URL, GITHUB_TOKEN_URL, SALT, TOKEN_URLS, TOKEN_URLS_TYPE
 from utils.cache import get_token_from_cache, set_token_to_cache
 from utils.client_manger import client_manager
 
-not_allow_token_urls = os.getenv("NOT_ALLOW_TOKEN_URLS", "").split(",")
-
+g_toekn_urls = TOKEN_URLS.split(",")
 
 class VscodeHeaders:
     copilot_host_name = urlparse(COPILOT_CHAT_URL).hostname
@@ -101,20 +99,29 @@ async def get_copilot_token(github_token, get_token_url=GITHUB_TOKEN_URL):
     return 200, copilot_token
 
 
-def check_token_url(url: str) -> bool:
-    if not not_allow_token_urls:
-        return True
+def is_url_in_list(url: str, url_list: list) -> bool:
+    if not url_list:
+        return False
     parsed_url = urlparse(url)
-    for not_allow_url in not_allow_token_urls:
+    for list_url in url_list:
         if all(
             [
-                parsed_url.scheme == urlparse(not_allow_url).scheme,
-                parsed_url.hostname == urlparse(not_allow_url).hostname,
-                parsed_url.path == urlparse(not_allow_url).path,
+                parsed_url.scheme == urlparse(list_url).scheme,
+                parsed_url.hostname == urlparse(list_url).hostname,
+                parsed_url.path == urlparse(list_url).path,
             ]
         ):
-            return False
-    return True
+            return True
+    return False
+
+
+def check_token_url(url: str) -> bool:
+    if TOKEN_URLS_TYPE == "white":
+        return is_url_in_list(url, g_toekn_urls)
+    elif TOKEN_URLS_TYPE == "black":
+        return not is_url_in_list(url, g_toekn_urls)
+    else:
+        return False
 
 
 def pares_url_token(url_token: str) -> tuple:

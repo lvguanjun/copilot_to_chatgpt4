@@ -24,10 +24,6 @@
 
    ![setting](readme/setting.png)
 
-   > **特性：支持 API 密钥配置 endpoint 和 token ，用于薅号商，例如 `https://api.example.com/copilot_internal/v2/token||example_token` ，即 {endpoint}||{token}**
-
-   > 理论上任何能拿到 `copilot token` 的接口都可以用此接口接入 `chatgpt` 。
-
 3. 根据个人喜好配置其他选项，聊天即可，建议选择 `gpt-4` model
 
    ![demo](readme/demo.png)
@@ -50,7 +46,6 @@ pip install -r requirements.txt
 
 ```bash
 cp config.py.example config.py
-export NOT_ALLOW_TOKEN_URLS=https://api.cocopilot.org/copilot_internal/v2/token
 uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
@@ -74,7 +69,10 @@ uvicorn main:app --host 127.0.0.1 --port 8000
    - `COPILOT_CHAT_ROUTE`: 代替出来的 `chat` 路由，默认为 `/v1/chat/completions`
    - `GITHUB_TOKEN_URL`: `github token` 获取接口，默认为 `https://api.github.com/copilot_internal/v2/token`
    - `SALT`: 用于生成 `vscode machine_id` 的盐值，若 `github token` 非个人使用建议设置，避免 id 相同撞车
-   - `NOT_ALLOW_TOKEN_URLS`: 不允许的 `github token` 获取接口，多个用 `,` 分隔，默认为 `https://api.cocopilot.org/copilot_internal/v2/token`
+   - `TOKEN_URLS_TYPE`: 允许的[支持特性](#其他) `github token` 获取接口类型，可选值为 `white` 和 `black`。
+     - `white`：白名单，只允许 `TOKEN_URLS` 指定的接口拼接作为 `github token`
+     - `black`：黑名单，允许除 `TOKEN_URLS` 指定的接口外的所有接口拼接作为 `github token`
+   - `TOKEN_URLS`: 允许的[支持特性](#其他) `github token` 获取接口，多个用 `,` 分隔
 
    </details>
 
@@ -86,6 +84,7 @@ uvicorn main:app --host 127.0.0.1 --port 8000
    ```bash
    docker-compose up -d copilot_to_chatgpt4
    ```
+
 3. 若想通过 ip 访问，需要修改 docker-compose.yml 中 `copilot_to_chatgpt4` 的 `ports` 配置为 `8080:8080`
 
 ### 使用指南
@@ -194,6 +193,10 @@ curl --location 'http://127.0.0.1:8080/v1/chat/completions' \
    }
    ```
 
-3. 白嫖源码可以，白嫖服务可以，点个 **star** :star: 啊！
+3. 支持特性
+
+**特性：接口所需要的 github_token 实质上支持配置任意 endpoint 和 token 拼接，用于薅号商，例如 `https://api.example.com/copilot_internal/v2/token||example_token` ，即 {endpoint}||{token}，理论上任何能拿到 `copilot token` 的接口都可以使用作为 "github_token"**
+
+4. 白嫖源码可以，白嫖服务可以，点个 **star** :star: 啊！
 
    > **500+**/天消息，**0** star
