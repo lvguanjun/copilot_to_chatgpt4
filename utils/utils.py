@@ -11,13 +11,16 @@ import hashlib
 import random
 import time
 import uuid
+from typing import Optional
 from urllib.parse import urlparse
 
-from config import COPILOT_CHAT_URL, GITHUB_TOKEN_URL, SALT, TOKEN_URLS, TOKEN_URLS_TYPE
+from fastapi import Request
+from fastapi.datastructures import Headers
+
+from config import COPILOT_CHAT_URL, GITHUB_TOKEN_URL, SALT
 from utils.cache import get_token_from_cache, set_token_to_cache
 from utils.client_manger import client_manager
 
-g_toekn_urls = TOKEN_URLS.split(",")
 
 class VscodeHeaders:
     copilot_host_name = urlparse(COPILOT_CHAT_URL).hostname
@@ -97,37 +100,3 @@ async def get_copilot_token(github_token, get_token_url=GITHUB_TOKEN_URL):
         # 保存到 cache
         set_token_to_cache(github_token, copilot_token)
     return 200, copilot_token
-
-
-def is_url_in_list(url: str, url_list: list) -> bool:
-    if not url_list:
-        return False
-    parsed_url = urlparse(url)
-    for list_url in url_list:
-        if all(
-            [
-                parsed_url.scheme == urlparse(list_url).scheme,
-                parsed_url.hostname == urlparse(list_url).hostname,
-                parsed_url.path == urlparse(list_url).path,
-            ]
-        ):
-            return True
-    return False
-
-
-def check_token_url(url: str) -> bool:
-    if TOKEN_URLS_TYPE == "white":
-        return is_url_in_list(url, g_toekn_urls)
-    elif TOKEN_URLS_TYPE == "black":
-        return not is_url_in_list(url, g_toekn_urls)
-    else:
-        return False
-
-
-def pares_url_token(url_token: str) -> tuple:
-    if "||" not in url_token:
-        return GITHUB_TOKEN_URL, url_token
-    get_token_url, github_token = url_token.split("||", 1)
-    if not check_token_url(get_token_url):
-        return get_token_url, None
-    return get_token_url, github_token
