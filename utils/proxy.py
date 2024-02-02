@@ -28,9 +28,11 @@ class ResponseTask:
     async def read_response_to_queue(self):
         self.queue = asyncio.Queue()
         try:
-            async for line in self.response.aiter_lines():
-                if line:
-                    await self.queue.put(line)
+            lines = (line async for line in self.response.aiter_lines() if line)
+            # Skip the first line
+            await anext(lines, None)
+            async for line in lines:
+                await self.queue.put(line)
         except Exception as e:
             await log_error(0, error=e)
         finally:
