@@ -19,6 +19,7 @@ from utils.client_manger import client_manager
 
 g_toekn_urls = TOKEN_URLS.split(",")
 
+
 class VscodeHeaders:
     copilot_host_name = urlparse(COPILOT_CHAT_URL).hostname
 
@@ -105,11 +106,13 @@ def is_url_in_list(url: str, url_list: list) -> bool:
         return False
     parsed_url = urlparse(url)
     for list_url in url_list:
+        paresd_list_url = urlparse(list_url)
         if all(
             [
-                parsed_url.scheme == urlparse(list_url).scheme,
-                parsed_url.hostname == urlparse(list_url).hostname,
-                parsed_url.path == urlparse(list_url).path,
+                parsed_url.scheme == paresd_list_url.scheme,
+                parsed_url.hostname == paresd_list_url.hostname,
+                paresd_list_url.path == "/*"
+                or parsed_url.path == paresd_list_url.path,
             ]
         ):
             return True

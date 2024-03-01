@@ -19,7 +19,8 @@ update_config "COPILOT_CHAT_URL" "COPILOT_CHAT_URL"
 update_config "COPILOT_CHAT_ROUTE" "COPILOT_CHAT_ROUTE"
 update_config "GITHUB_TOKEN_URL" "GITHUB_TOKEN_URL"
 update_config "SALT" "SALT"
-update_config "NOT_ALLOW_TOKEN_URLS" "NOT_ALLOW_TOKEN_URLS"
+update_config "TOKEN_URLS_TYPE" "TOKEN_URLS_TYPE"
+update_config "TOKEN_URLS" "TOKEN_URLS"
 
 # Start Uvicorn with live reload
 exec uvicorn main:app --host 0.0.0.0 --port 8080 --reload
