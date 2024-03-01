@@ -18,7 +18,7 @@ from utils.client_manger import client_manager
 from utils.copilot_proxy_utils import create_json_data, get_fake_headers
 from utils.logger import logger
 from utils.proxy import proxy_request
-from utils.utils import get_copilot_token
+from utils.utils import get_copilot_token, pares_url_token
 
 
 @asynccontextmanager
@@ -56,7 +56,12 @@ async def copilot_proxy(request: Request):
     github_token = auth_header.removeprefix("Bearer ")
     if not github_token:
         return Response(status_code=401, content="Unauthorized")
-    status_code, copilot_token = await get_copilot_token(github_token)
+    get_token_url, github_token = pares_url_token(github_token)
+    if github_token is None:
+        return Response(
+            status_code=403, content=f"{get_token_url} is not allow to get token"
+        )
+    status_code, copilot_token = await get_copilot_token(github_token, get_token_url)
     if status_code != 200:
         return Response(status_code=status_code, content=copilot_token)
 
