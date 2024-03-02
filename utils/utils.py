@@ -13,11 +13,12 @@ import time
 import uuid
 from urllib.parse import urlparse
 
-from config import COPILOT_CHAT_URL, GITHUB_TOKEN_URL, SALT, TOKEN_URLS, TOKEN_URLS_TYPE
+from config import COPILOT_CHAT_URL, GITHUB_TOKEN_URL, SALT, WHITE_TOKEN_URLS, BLACK_TOKEN_URLS
 from utils.cache import get_token_from_cache, set_token_to_cache
 from utils.client_manger import client_manager
 
-g_toekn_urls = TOKEN_URLS.split(",")
+w_toekn_urls = WHITE_TOKEN_URLS.split(",")
+b_token_urls = BLACK_TOKEN_URLS.split(",")
 
 
 class VscodeHeaders:
@@ -120,12 +121,9 @@ def is_url_in_list(url: str, url_list: list) -> bool:
 
 
 def check_token_url(url: str) -> bool:
-    if TOKEN_URLS_TYPE == "white":
-        return is_url_in_list(url, g_toekn_urls)
-    elif TOKEN_URLS_TYPE == "black":
-        return not is_url_in_list(url, g_toekn_urls)
-    else:
+    if is_url_in_list(url, b_token_urls):
         return False
+    return is_url_in_list(url, w_toekn_urls)
 
 
 def pares_url_token(url_token: str) -> tuple:
