@@ -66,16 +66,16 @@ class VscodeHeaders:
             "Vscode-Sessionid": self.vscode_session_id,
             "Vscode-Machineid": self.vscode_machine_id,
             "X-Github-Api-Version": "2023-07-07",
-            "Editor-Version": "vscode/1.85.0",
-            "Editor-Plugin-Version": "copilot-chat/0.11.1",
+            "Editor-Version": "vscode/1.86.2",
+            "Editor-Plugin-Version": "copilot-chat/0.12.2",
             "Openai-Organization": "github-copilot",
             "Copilot-Integration-Id": "vscode-chat",
             "Openai-Intent": "conversation-panel",
             "Content-Type": "application/json",
-            "User-Agent": "GitHubCopilotChat/0.11.1",
+            "User-Agent": "GitHubCopilotChat/0.12.2",
             "Accept": "*/*",
             "Accept-Encoding": "gzip,deflate,br",
-            "connection": "keep-alive",
+            "Connection": "keep-alive",
         }
 
 
@@ -87,11 +87,12 @@ async def get_copilot_token(github_token, get_token_url=GITHUB_TOKEN_URL):
         headers = {
             "Host": token_host_name,
             "Authorization": f"token {github_token}",
-            "Editor-Version": "vscode/1.85.0",
-            "Editor-Plugin-Version": "copilot-chat/0.11.1",
-            "User-Agent": "GitHubCopilotChat/0.11.1",
+            "Editor-Version": "vscode/1.86.2",
+            "Editor-Plugin-Version": "copilot/1.171.0",
+            "User-Agent": "GithubCopilot/1.171.0",
             "Accept": "*/*",
-            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Encoding": "gzip,deflate,br",
+            "Connection": "close",
         }
         response = await client_manager.client.get(get_token_url, headers=headers)
         if response.status_code != 200:
