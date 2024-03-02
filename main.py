@@ -7,6 +7,7 @@
 @Desc    :   main.py
 """
 
+import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response
@@ -40,6 +41,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+g_ratelimits = {}
+
 
 @app.post(COPILOT_CHAT_ROUTE)
 async def copilot_proxy(request: Request):
@@ -57,13 +60,37 @@ async def copilot_proxy(request: Request):
     if status_code != 200:
         return Response(status_code=status_code, content=copilot_token)
 
+    if ratelimit_end_time := g_ratelimits.get(github_token):
+        now = int(time.time())
+        if now < ratelimit_end_time:
+            retry_after = str(ratelimit_end_time - now)
+            return Response(
+                status_code=429,
+                headers={
+                    "x-ratelimit-user-retry-after": retry_after,
+                    "retry-after": retry_after,
+                    "content-type": "text/plain; charset=utf-8",
+                    "content-security-policy": "default-src 'none'; sandbox",
+                },
+                content="rate limit exceeded",
+            )
+        else:
+            g_ratelimits.pop(github_token, None)
+
     max_try = 1
     headers = get_fake_headers(github_token)
     headers["Authorization"] = f"Bearer {copilot_token.get('token')}"
     json_data = await create_json_data(request)
     new_request = ("POST", headers, json_data)
 
-    return await proxy_request(new_request, COPILOT_CHAT_URL, max_try)
+    response = await proxy_request(new_request, COPILOT_CHAT_URL, max_try)
+
+    if response.status_code == 429:
+        retry_after = response.headers.get("x-ratelimit-user-retry-after")
+        if retry_after is not None:
+            g_ratelimits[github_token] = int(time.time()) + int(retry_after)
+
+    return response
 
 
 if __name__ == "__main__":

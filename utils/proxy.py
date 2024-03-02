@@ -106,7 +106,13 @@ async def proxy_request(
             method, headers, json = request
             req = httpx.Request(method, target_url, headers=headers, json=json)
             response = await client_manager.client.send(req, stream=True)
-            if response.status_code == 200 or i == max_try - 1:
+            if any(
+                [
+                    response.status_code == 200,
+                    response.status_code == 429,
+                    i == max_try - 1,
+                ]
+            ):
                 return await handle_response(response)
             await log_error(i, response=response)
             await close_response(response)
