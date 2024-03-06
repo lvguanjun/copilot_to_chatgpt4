@@ -13,7 +13,13 @@ import time
 import uuid
 from urllib.parse import urlparse
 
-from config import COPILOT_CHAT_URL, GITHUB_TOKEN_URL, SALT, WHITE_TOKEN_URLS, BLACK_TOKEN_URLS
+from config import (
+    BLACK_TOKEN_URLS,
+    COPILOT_CHAT_URL,
+    GITHUB_TOKEN_URL,
+    SALT,
+    WHITE_TOKEN_URLS,
+)
 from utils.cache import get_token_from_cache, set_token_to_cache
 from utils.client_manger import client_manager
 
@@ -79,7 +85,8 @@ class VscodeHeaders:
 
 
 async def get_copilot_token(github_token, get_token_url=GITHUB_TOKEN_URL):
-    copilot_token = get_token_from_cache(github_token)
+    cahce_key = f"{get_token_url}||{github_token}"
+    copilot_token = get_token_from_cache(cahce_key)
     if not copilot_token:
         token_host_name = urlparse(get_token_url).hostname
         # 请求 github 接口获取 copilot_token
@@ -98,7 +105,7 @@ async def get_copilot_token(github_token, get_token_url=GITHUB_TOKEN_URL):
             return response.status_code, response.text
         copilot_token = response.json()
         # 保存到 cache
-        set_token_to_cache(github_token, copilot_token)
+        set_token_to_cache(cahce_key, copilot_token)
     return 200, copilot_token
 
 
@@ -112,8 +119,7 @@ def is_url_in_list(url: str, url_list: list) -> bool:
             [
                 parsed_url.scheme == paresd_list_url.scheme,
                 parsed_url.hostname == paresd_list_url.hostname,
-                paresd_list_url.path == "/*"
-                or parsed_url.path == paresd_list_url.path,
+                paresd_list_url.path == "/*" or parsed_url.path == paresd_list_url.path,
             ]
         ):
             return True
@@ -121,9 +127,7 @@ def is_url_in_list(url: str, url_list: list) -> bool:
 
 
 def check_token_url(url: str) -> bool:
-    if is_url_in_list(url, b_token_urls):
-        return False
-    return is_url_in_list(url, w_toekn_urls)
+    return not is_url_in_list(url, b_token_urls) and is_url_in_list(url, w_toekn_urls)
 
 
 def pares_url_token(url_token: str) -> tuple:
