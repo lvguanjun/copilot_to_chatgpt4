@@ -29,7 +29,6 @@ jobs:
         with:
           images: 301redirect/copilot_to_chatgpt4
           tags: |
-            type=raw,value=latest
             type=raw,value=${{ env.SHORT_SHA }}
             type=ref,event=tag
 
