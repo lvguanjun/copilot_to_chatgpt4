@@ -12,6 +12,7 @@ services:
       - SALT=$SALT
       - TOKEN_URLS_TYPE=$TOKEN_URLS_TYPE
       - TOKEN_URLS=$TOKEN_URLS
+      - RATE_LIMIT_TIME=$RATE_LIMIT_TIME
 
   chatgpt-next-web:
     container_name: chatgpt-next-web

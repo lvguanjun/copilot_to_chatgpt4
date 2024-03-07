@@ -26,3 +26,6 @@ SALT = "is_a_salt"
 WHITE_TOKEN_URLS = ""
 
 BLACK_TOKEN_URLS = "https://api.cocopilot.org/copilot_internal/v2/token"
+
+# 限速等待时间，单位秒
+RATE_LIMIT_TIME = 30 * 60

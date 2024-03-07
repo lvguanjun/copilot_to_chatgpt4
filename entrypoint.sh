@@ -21,6 +21,7 @@ update_config "GITHUB_TOKEN_URL" "GITHUB_TOKEN_URL"
 update_config "SALT" "SALT"
 update_config "TOKEN_URLS_TYPE" "TOKEN_URLS_TYPE"
 update_config "TOKEN_URLS" "TOKEN_URLS"
+update_config "RATE_LIMIT_TIME" "RATE_LIMIT_TIME"
 
 # Start Uvicorn with live reload
 exec uvicorn main:app --host 0.0.0.0 --port 8080 --reload

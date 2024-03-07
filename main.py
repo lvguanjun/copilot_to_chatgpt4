@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
-from config import COPILOT_CHAT_ROUTE, COPILOT_CHAT_URL
+from config import COPILOT_CHAT_ROUTE, COPILOT_CHAT_URL, RATE_LIMIT_TIME
 from utils.client_manger import client_manager
 from utils.copilot_proxy_utils import create_json_data, get_fake_headers
 from utils.logger import logger
@@ -91,9 +91,10 @@ async def copilot_proxy(request: Request):
     response = await proxy_request(new_request, COPILOT_CHAT_URL, max_try)
 
     if response.status_code == 429:
-        retry_after = response.headers.get("x-ratelimit-user-retry-after")
-        if retry_after is not None:
-            g_ratelimits[github_token] = int(time.time()) + int(retry_after)
+        if retry_after := response.headers.get("x-ratelimit-user-retry-after"):
+            g_ratelimits[github_token] = (
+                int(time.time()) + int(retry_after) + int(RATE_LIMIT_TIME)
+            )
 
     return response
 
