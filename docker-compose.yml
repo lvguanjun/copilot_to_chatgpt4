@@ -10,6 +10,7 @@ services:
       - COPILOT_CHAT_ROUTE=$COPILOT_CHAT_ROUTE
       - GITHUB_TOKEN_URL=$GITHUB_TOKEN_URL
       - SALT=$SALT
+      - RATE_LIMIT_TIME=$RATE_LIMIT_TIME
 
   chatgpt-next-web:
     container_name: chatgpt-next-web

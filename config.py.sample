@@ -22,3 +22,6 @@ GITHUB_TOKEN_URL = "https://api.github.com/copilot_internal/v2/token"
 # 提供一个盐，使不同服务器上生成的 vscode_machine_id 不同
 # 建议更改盐，避免同一个 github_token 导致的撞车
 SALT = "is_a_salt"
+
+# 限速等待时间，单位秒
+RATE_LIMIT_TIME = 30 * 60
