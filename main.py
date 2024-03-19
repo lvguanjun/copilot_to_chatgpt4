@@ -83,7 +83,8 @@ async def copilot_proxy(request: Request):
             g_ratelimits.pop(github_token, None)
 
     max_try = 1
-    headers = get_fake_headers(github_token)
+    cache_key = f"{get_token_url}||{github_token}"
+    headers = get_fake_headers(cache_key)
     headers["Authorization"] = f"Bearer {copilot_token.get('token')}"
     json_data = await create_json_data(request)
     new_request = ("POST", headers, json_data)
